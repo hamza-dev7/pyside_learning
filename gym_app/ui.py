@@ -1,7 +1,7 @@
 import sys
 
 import system
-from data import GYM_MEM_FILE, load_json, save_json
+from data import GYM_MEM_FILE, MEMBERSHIP_DICT_FILE, load_json, save_json
 from PySide6 import QtCore, QtWidgets
 
 
@@ -12,9 +12,13 @@ class MyGym:
         # self.member = system.Member
 
     def load_gym_members(self):
-        raw_data = load_json(GYM_MEM_FILE)
-        for key, value in raw_data.items():
+        gym_raw_data = load_json(GYM_MEM_FILE)
+        for key, value in gym_raw_data.items():
             self.gym.members[key] = system.Member.from_dict(value)
+
+        membership_raw_data = load_json(MEMBERSHIP_DICT_FILE)
+        for key, value in membership_raw_data.items():
+            self.membership.membership_dict[key] = value
 
     @QtCore.Slot()
     def add_member(self, parent: QtWidgets.QWidget, first_name, last_name):
@@ -32,6 +36,7 @@ class MyGym:
             self.membership.add_membership(member, membership_type)
             optimized_data = {member.id: member.to_dict() for member in self.gym.members.values()}
             save_json(GYM_MEM_FILE, optimized_data)
+            save_json(MEMBERSHIP_DICT_FILE, self.membership.membership_dict)
         except system.MembershipAlreadyExistsError as e:
             QtWidgets.QMessageBox.warning(parent, "Membership Error", str(e))
 
@@ -43,6 +48,7 @@ class MyGym:
             self.membership.add_membership(member, new_membership_type)
             optimized_data = {member.id: member.to_dict() for member in self.gym.members.values()}
             save_json(GYM_MEM_FILE, optimized_data)
+            save_json(MEMBERSHIP_DICT_FILE, self.membership.membership_dict)
         except system.NoMembershipExistsError as e:
             QtWidgets.QMessageBox.warning(parent, "Membership Error", str(e))
 
@@ -52,14 +58,16 @@ class MyGym:
             self.membership.remove_membership(member, member.membership)
             optimized_data = {member.id: member.to_dict() for member in self.gym.members.values()}
             save_json(GYM_MEM_FILE, optimized_data)
+            save_json(MEMBERSHIP_DICT_FILE, self.membership.membership_dict)
         except system.NoMembershipExistsError as e:
             QtWidgets.QMessageBox.warning(parent, "Membership Error", str(e))
 
     @QtCore.Slot()
     def remove_member(self, member: system.Member):
-        self.gym.remove_member(member)
+        self.gym.remove_member(member, self.membership)
         optimized_data = {member.id: member.to_dict() for member in self.gym.members.values()}
         save_json(GYM_MEM_FILE, optimized_data)
+        save_json(MEMBERSHIP_DICT_FILE, self.membership.membership_dict)
 
 class MemberInfoWidget(QtWidgets.QWidget):
 
