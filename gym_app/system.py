@@ -20,6 +20,14 @@ class DuplicateMemberError(GymError):
     def __init__(self, member_id):
         super().__init__(f"Member '{member_id}' does already exist")
 
+class MembershipAlreadyExistsError(GymError):
+    def __init__(self, member_id):
+        super().__init__(f"Member '{member_id}' already has a membership")
+
+class NoMembershipExistsError(GymError):
+    def __init__(self, member_id):
+        super().__init__(f"Member '{member_id}' does not have a membership")
+
 class WrongDataError(GymError):
     def __init__(self):
         super().__init__("Wrong input data")
@@ -85,6 +93,8 @@ class Gym:
                                         }
 
         def add_membership(self,member:Member, membership_type):
+            if member.membership is not None:
+                raise MembershipAlreadyExistsError(member.id)
             self.membership_dict[membership_type].append(member.id)
             member.membership = membership_type
             if membership_type == "1":
@@ -97,6 +107,8 @@ class Gym:
                 member.membership_end_time = (datetime.datetime.now(tz=TIMEZONE) + datetime.timedelta(days=365)).strftime('%Y-%m-%d')
 
         def remove_membership(self,member:Member, membership_type):
+            if member.membership is None:
+                raise NoMembershipExistsError(member.id)
             self.membership_dict[membership_type].remove(member.id)
             member.membership = None
             member.membership_end_time = None

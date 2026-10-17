@@ -1,6 +1,6 @@
 import json
 
-GYM_MEM_FILE = "gym_members.json"
+GYM_MEM_FILE = "/home/sicko/projects/pyside_learning/gym_app/gym_members.json"
 MEMBERSHIP_DICT_FILE = "membership_dict.json"
 def load_json(file_path):
     try:
